@@ -15,8 +15,8 @@ const pretendard = localFont({
 });
 
 export const metadata: Metadata = {
-  title: "글로그",
-  description: "글로그는 당신을 위한 기술 블로그 입니다.",
+  title: "슬로그",
+  description: "슬로그는 당신을 위한 기술 블로그 입니다.",
 };
 
 export default function RootLayout({
