@@ -87,7 +87,7 @@ export function ClientLayout({
           {isUserPage && (
             <Button variant="link" asChild>
               <Link href="/">
-                <Copyright /> 2025 글로그
+                <Copyright /> 2025 슬로그
               </Link>
             </Button>
           )}
@@ -96,7 +96,7 @@ export function ClientLayout({
             <Button variant="link" asChild>
               <Link href="/adm">
                 <MonitorCog />
-                글로그 관리자 페이지
+                슬로그 관리자 페이지
               </Link>
             </Button>
           )}
