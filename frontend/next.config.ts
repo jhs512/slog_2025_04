@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
       },
       {
         protocol: "https",
-        hostname: "api.glog.oa.gg",
+        hostname: "api.glog.gg",
       },
     ],
     contentSecurityPolicy: "default-src 'self'; img-src 'self' data: https:;",
