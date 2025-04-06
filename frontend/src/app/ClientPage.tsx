@@ -1,7 +1,6 @@
 "use client";
 
 import KaKaoLoginButton from "@/lib/business/components/KaKaoLoginButton";
-import NaverLoginButton from "@/lib/business/components/NaverLoginButton";
 
 import { useGlobalLoginMember } from "@/stores/auth/loginMember";
 
