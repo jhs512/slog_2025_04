@@ -2,11 +2,14 @@
 
 import { Editor } from "@toast-ui/react-editor";
 import { use, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { useTheme } from "next-themes";
 
 import Image from "next/image";
 import Link from "next/link";
+
+import client from "@/lib/backend/client";
 
 import { components } from "@/lib/backend/apiV1/schema";
 import ToastUIEditorViewer from "@/lib/business/components/ToastUIEditorViewer";
@@ -28,7 +31,7 @@ import {
 import { Download, Eye, ListX, Lock } from "lucide-react";
 
 export default function ClientPage({
-  post,
+  post: initialPost,
   genFiles,
 }: {
   post: components["schemas"]["PostWithContentDto"];
@@ -37,8 +40,13 @@ export default function ClientPage({
   const { resolvedTheme } = useTheme();
   const { loginMember, isAdmin } = use(LoginMemberContext);
 
+  const [post, setPost] = useState(initialPost);
+
   // any 타입을 Editor로 변경
   const toastUiEditorViewerRef = useRef<Editor>(null);
+  const lastModifyDateAfterRef = useRef(post.modifyDate);
+
+  const POLLING_INTERVAL = 10000; // 폴링 간격을 상수로 정의 (밀리초)
 
   useEffect(() => {
     const checkAndScrollToElement = () => {
@@ -64,6 +72,82 @@ export default function ClientPage({
 
     return () => clearInterval(interval);
   }, [post.id]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let isComponentMounted = true;
+
+    const checkForUpdates = async () => {
+      // 컴포넌트가 언마운트되었거나 문서가 숨겨져 있으면 폴링 중지
+      if (!isComponentMounted || document.hidden) {
+        return;
+      }
+
+      try {
+        const res = await client.GET("/api/v1/posts/{id}", {
+          params: {
+            path: {
+              id: post.id,
+            },
+            query: {
+              lastModifyDateAfter: lastModifyDateAfterRef.current,
+            },
+          },
+        });
+
+        // 컴포넌트가 여전히 마운트된 상태인지 확인
+        if (!isComponentMounted) return;
+
+        if (res.response.status === 200 && res.data) {
+          lastModifyDateAfterRef.current = res.data.modifyDate;
+
+          if (toastUiEditorViewerRef.current?.getInstance) {
+            toastUiEditorViewerRef.current
+              .getInstance()
+              .setMarkdown(res.data.content);
+          }
+
+          setPost((prev) => ({
+            ...prev,
+            title: res.data.title,
+            modifyDate: res.data.modifyDate,
+            content: res.data.content,
+          }));
+
+          toast("문서 업데이트", {
+            description: "새로운 내용으로 업데이트되었습니다.",
+          });
+        }
+      } catch (error) {
+        // 에러 처리
+        console.error("문서 업데이트 중 오류 발생:", error);
+      }
+
+      // 컴포넌트가 마운트된 상태일 때만 다음 폴링 예약
+      if (isComponentMounted) {
+        timeoutId = setTimeout(checkForUpdates, POLLING_INTERVAL);
+      }
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isComponentMounted) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(checkForUpdates, POLLING_INTERVAL);
+      }
+    };
+
+    // 초기 폴링 시작
+    timeoutId = setTimeout(checkForUpdates, POLLING_INTERVAL);
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+
+    // 클린업 함수
+    return () => {
+      isComponentMounted = false; // 컴포넌트 언마운트 표시
+      clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [post.id]); // toast 의존성 추가
 
   return (
     <main className="container mt-2 mx-auto px-2">
