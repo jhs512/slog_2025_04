@@ -1,7 +1,7 @@
 "use client";
 
 import { Editor } from "@toast-ui/react-editor";
-import { use, useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef } from "react";
 
 import { useTheme } from "next-themes";
 
