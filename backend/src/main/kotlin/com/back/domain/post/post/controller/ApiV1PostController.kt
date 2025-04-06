@@ -117,11 +117,11 @@ class ApiV1PostController(
     @Transactional
     @PostMapping("/temp")
     @Operation(summary = "임시 글 생성")
-    fun makeTemp(): RsData<PostDto> {
+    fun makeTemp(): RsData<PostWithContentDto> {
         val findTempOrMakeRsData = postService.findTempOrMake(rq.actor!!)
 
         return findTempOrMakeRsData.newDataOf(
-            PostDto(findTempOrMakeRsData.data)
+            PostWithContentDto(findTempOrMakeRsData.data)
         )
     }
 

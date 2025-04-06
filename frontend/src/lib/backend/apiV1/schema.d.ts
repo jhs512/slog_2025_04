@@ -433,6 +433,30 @@ export interface components {
         PostCommentWriteReqBody: {
             content: string;
         };
+        PostWithContentDto: {
+            content: string;
+            actorCanModify?: boolean;
+            actorCanDelete?: boolean;
+            /** Format: int64 */
+            id: number;
+            /** Format: date-time */
+            createDate: string;
+            /** Format: date-time */
+            modifyDate: string;
+            /** Format: int64 */
+            authorId: number;
+            authorName: string;
+            authorProfileImgUrl: string;
+            title: string;
+            published: boolean;
+            listed: boolean;
+            thumbnailImgUrl: string;
+        };
+        RsDataPostWithContentDto: {
+            resultCode: string;
+            msg: string;
+            data: components["schemas"]["PostWithContentDto"];
+        };
         MemberLoginReqBody: {
             username: string;
             password: string;
@@ -462,25 +486,6 @@ export interface components {
             /** Format: int64 */
             totalItems: number;
             items: components["schemas"]["PostDto"][];
-        };
-        PostWithContentDto: {
-            content: string;
-            actorCanModify?: boolean;
-            actorCanDelete?: boolean;
-            /** Format: int64 */
-            id: number;
-            /** Format: date-time */
-            createDate: string;
-            /** Format: date-time */
-            modifyDate: string;
-            /** Format: int64 */
-            authorId: number;
-            authorName: string;
-            authorProfileImgUrl: string;
-            title: string;
-            published: boolean;
-            listed: boolean;
-            thumbnailImgUrl: string;
         };
         PostStatisticsResBody: {
             /** Format: int64 */
@@ -1081,7 +1086,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json;charset=UTF-8": components["schemas"]["RsDataPostDto"];
+                    "application/json;charset=UTF-8": components["schemas"]["RsDataPostWithContentDto"];
                 };
             };
             /** @description Bad Request */
