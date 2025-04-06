@@ -21,7 +21,7 @@ class Post : BaseTime {
     @Column(length = 100)
     lateinit var title: String
 
-    @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "LONGTEXT")
     lateinit var content: String
 
     @OneToMany(mappedBy = "post", cascade = [CascadeType.PERSIST, CascadeType.REMOVE], orphanRemoval = true)
