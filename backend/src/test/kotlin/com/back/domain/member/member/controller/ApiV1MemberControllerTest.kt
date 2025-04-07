@@ -1,6 +1,7 @@
 package com.back.domain.member.member.controller
 
 import com.back.domain.member.member.service.MemberService
+import jakarta.servlet.http.Cookie
 import org.assertj.core.api.Assertions
 import org.hamcrest.Matchers
 import org.junit.jupiter.api.DisplayName
@@ -311,15 +312,18 @@ class ApiV1MemberControllerTest {
     }
 
     @Test
-    @DisplayName("내 정보, with user1")
+    @DisplayName("내 정보, with user1 cookies")
     fun t9() {
         val actor = memberService.findByUsername("user2").get()
-        val actorAuthToken = memberService.genAuthToken(actor)
+        val accessToken = memberService.genAccessToken(actor)
 
         val resultActions = mvc
             .perform(
                 MockMvcRequestBuilders.get("/api/v1/members/me")
-                    .header("Authorization", "Bearer $actorAuthToken")
+                    .cookie(
+                        Cookie("apiKey", actor.apiKey),
+                        Cookie("accessToken", accessToken)
+                    )
             )
             .andDo(MockMvcResultHandlers.print())
 
