@@ -98,6 +98,7 @@ class SecurityConfig(
         // 허용할 오리진 설정
         configuration.allowedOrigins = listOf(
             "https://cdpn.io",
+            "https://localhost:3000",
             AppConfig.getSiteBackUrl(),
             AppConfig.getSiteFrontUrl()
         )
