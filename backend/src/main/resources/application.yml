@@ -49,7 +49,7 @@ spring:
             scope: profile_nickname, profile_image
             client-name: Kakao
             authorization-grant-type: authorization_code
-            redirect-uri: "${custom.site.backUrl}/{action}/oauth2/code/{registrationId}"
+            redirect-uri: '{baseUrl}/{action}/oauth2/code/{registrationId}'
           naver:
             clientId: ON_SECRET
             clientSecret: ON_SECRET
