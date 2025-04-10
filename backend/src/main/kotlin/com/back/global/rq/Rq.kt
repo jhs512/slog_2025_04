@@ -73,7 +73,7 @@ class Rq(
     fun deleteCookie(name: String) {
         val cookie = ResponseCookie.from(name, "")
             .path("/")
-            .domain("localhost")
+            .domain(cookieDomain())
             .sameSite("Strict")
             .secure(true)
             .httpOnly(true)
