@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 
 import LoginButton from "./LoginButton";
-import LoginPageButton from "./LoginPageButton";
 import Logo from "./Logo";
 import MeMenuButton from "./MeMenuButton";
 import PostWriteButton from "./PostWriteButton";
