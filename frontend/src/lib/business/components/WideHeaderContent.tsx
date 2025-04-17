@@ -13,6 +13,7 @@ import {
   UserRoundSearch,
 } from "lucide-react";
 
+import LoginButton from "./LoginButton";
 import LoginPageButton from "./LoginPageButton";
 import Logo from "./Logo";
 import MeMenuButton from "./MeMenuButton";
@@ -71,7 +72,7 @@ export default function WideHeaderContent({
 
       <div className="flex-grow"></div>
 
-      {!isLogin && <LoginPageButton />}
+      {!isLogin && <LoginButton />}
       {isLogin && <MeMenuButton />}
       <ThemeToggleButton />
     </div>

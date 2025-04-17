@@ -36,6 +36,7 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter-data-jpa")
     implementation("org.springframework.boot:spring-boot-starter-security")
     implementation("org.springframework.boot:spring-boot-starter-oauth2-client")
+    implementation("org.springframework.boot:spring-boot-starter-websocket")
 
     // 스프링 부트 추가 기능
     implementation("org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.1")
