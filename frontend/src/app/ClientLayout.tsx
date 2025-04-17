@@ -9,6 +9,7 @@ import Link from "next/link";
 
 import client from "@/lib/backend/client";
 
+import { publish, subscribe } from "@/lib/backend/stompClient";
 import NarrowHeaderContent from "@/lib/business/components/NarrowHeaderContent";
 import WideHeaderContent from "@/lib/business/components/WideHeaderContent";
 
@@ -57,6 +58,16 @@ export function ClientLayout({
         }
       });
     };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    subscribe("/topic/chat.rooms.1.messages", (response: any) => {
+      const body = JSON.parse(response.body);
+      alert(body.senderId);
+    });
+
+    publish("/app/chat.rooms.1.messages.create", {
+      message: "Hello, World!",
+    });
 
     fetchMember();
     // eslint-disable-next-line react-hooks/exhaustive-deps

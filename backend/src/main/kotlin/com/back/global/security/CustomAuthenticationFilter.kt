@@ -54,7 +54,7 @@ class CustomAuthenticationFilter(
         response: HttpServletResponse,
         filterChain: FilterChain
     ) {
-        if (!request.requestURI.startsWith("/api/")) {
+        if (!request.requestURI.startsWith("/api/") && !request.requestURI.startsWith("/ws")) {
             filterChain.doFilter(request, response)
             return
         }
