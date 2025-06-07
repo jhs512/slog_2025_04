@@ -48,9 +48,9 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     runtimeOnly("com.mysql:mysql-connector-j")
 
-    // QueryDSL
-    implementation("com.querydsl:querydsl-jpa:5.1.0:jakarta")
-    kapt("com.querydsl:querydsl-apt:5.1.0:jakarta")
+    // QueryDSL (OpenFeign 포크 - 활발하게 유지보수됨, Jakarta 기본 지원)
+    implementation("io.github.openfeign.querydsl:querydsl-jpa:6.11")
+    kapt("io.github.openfeign.querydsl:querydsl-apt:6.11:jpa")
 
     // 유틸/JWT
     implementation("io.jsonwebtoken:jjwt-api:0.12.6")
