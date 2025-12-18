@@ -118,6 +118,79 @@ export default function ClientPage({
           .marpit > svg:nth-of-type(${currentSlide + 1}) {
             display: block;
           }
+          
+          /* Force Light Theme for Code Blocks in Marp */
+          .marpit code[class*="language-"],
+          .marpit pre[class*="language-"] {
+            color: black !important;
+            text-shadow: 0 1px white !important;
+            background: #f5f2f0 !important;
+          }
+
+          .marpit :not(pre) > code[class*="language-"],
+          .marpit pre[class*="language-"] {
+            background: #f5f2f0 !important;
+          }
+
+          .marpit .token.comment,
+          .marpit .token.prolog,
+          .marpit .token.doctype,
+          .marpit .token.cdata {
+            color: slategray !important;
+          }
+
+          .marpit .token.punctuation {
+            color: #999 !important;
+          }
+
+          .marpit .token.namespace {
+            opacity: 0.7 !important;
+          }
+
+          .marpit .token.property,
+          .marpit .token.tag,
+          .marpit .token.boolean,
+          .marpit .token.number,
+          .marpit .token.constant,
+          .marpit .token.symbol,
+          .marpit .token.deleted {
+            color: #905 !important;
+          }
+
+          .marpit .token.selector,
+          .marpit .token.attr-name,
+          .marpit .token.string,
+          .marpit .token.char,
+          .marpit .token.builtin,
+          .marpit .token.inserted {
+            color: #690 !important;
+          }
+
+          .marpit .token.operator,
+          .marpit .token.entity,
+          .marpit .token.url,
+          .marpit .language-css .token.string,
+          .marpit .style .token.string {
+            color: #9a6e3a !important;
+            background: hsla(0, 0%, 100%, 0.5) !important;
+          }
+
+          .marpit .token.atrule,
+          .marpit .token.attr-value,
+          .marpit .token.keyword {
+            color: #07a !important;
+          }
+
+          .marpit .token.function,
+          .marpit .token.class-name {
+            color: #dd4a68 !important;
+          }
+
+          .marpit .token.regex,
+          .marpit .token.important,
+          .marpit .token.variable {
+            color: #e90 !important;
+          }
         ` }} />
         <div
           className="marp-slides"
