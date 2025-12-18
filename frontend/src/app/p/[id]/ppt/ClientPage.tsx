@@ -21,7 +21,22 @@ export default function ClientPage({
   html: string;
   css: string;
 }) {
+  // 해시에서 초기 슬라이드 인덱스 가져오기
+  const getInitialSlide = () => {
+    if (typeof window !== "undefined") {
+      const hash = window.location.hash;
+      if (hash) {
+        const slideNum = parseInt(hash.substring(1));
+        if (!isNaN(slideNum) && slideNum > 0) {
+          return slideNum - 1;
+        }
+      }
+    }
+    return 0;
+  };
+
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [isInitialized, setIsInitialized] = useState(false);
 
   // HTML에서 슬라이드 개수 추출
   const slideCount = (html.match(/<section/g) || []).length;
@@ -76,7 +91,42 @@ export default function ClientPage({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [nextSlide, prevSlide, goToSlide, slideCount]);
+
+  // 초기 로드 시 해시 확인
+  useEffect(() => {
+    const initialSlide = getInitialSlide();
+    if (initialSlide >= 0 && initialSlide < slideCount) {
+      setCurrentSlide(initialSlide);
+    }
+    setIsInitialized(true);
+  }, [slideCount]);
+
+  // 슬라이드 변경 시 해시 업데이트
+  useEffect(() => {
+    if (isInitialized) {
+      const newHash = `#${currentSlide + 1}`;
+      if (window.location.hash !== newHash) {
+        window.history.replaceState(null, "", newHash);
+      }
+    }
+  }, [currentSlide, isInitialized]);
+
+  // 해시 변경 감지 (뒤로가기/앞으로가기 지원)
+  useEffect(() => {
+    const handleHashChange = () => {
+      const slideNum = getInitialSlide();
+      if (slideNum !== currentSlide && slideNum >= 0 && slideNum < slideCount) {
+        setCurrentSlide(slideNum);
+      }
+    };
+
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
+  }, [currentSlide, slideCount]);
 
   const handleContainerClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
@@ -248,6 +298,14 @@ export default function ClientPage({
         >
           <ChevronRight className="w-5 h-5" />
         </Button>
+      </div>
+
+      {/* 진행률 바 */}
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+        <div
+          className="h-full bg-primary transition-all duration-300 ease-out"
+          style={{ width: `${((currentSlide + 1) / slideCount) * 100}%` }}
+        />
       </div>
     </div>
   );
