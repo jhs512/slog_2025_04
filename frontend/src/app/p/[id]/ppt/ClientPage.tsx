@@ -78,8 +78,36 @@ export default function ClientPage({
     };
   }, [nextSlide, prevSlide, goToSlide, slideCount]);
 
+  const handleContainerClick = useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      // 대화형 요소(버튼, 링크 등) 클릭 시 무시
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "BUTTON" ||
+        target.tagName === "A" ||
+        target.closest("button") ||
+        target.closest("a")
+      ) {
+        return;
+      }
+
+      const { clientX } = e;
+      const { innerWidth } = window;
+
+      if (clientX < innerWidth / 2) {
+        prevSlide();
+      } else {
+        nextSlide();
+      }
+    },
+    [nextSlide, prevSlide]
+  );
+
   return (
-    <div className="fixed inset-0 bg-black flex flex-col">
+    <div
+      className="fixed inset-0 bg-black flex flex-col"
+      onClick={handleContainerClick}
+    >
       {/* 컨트롤 바 */}
       <div className="absolute top-0 left-0 right-0 z-10 bg-black/50 text-white p-2 flex items-center justify-between opacity-0 hover:opacity-100 transition-opacity">
         <div className="flex items-center gap-2">
