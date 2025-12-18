@@ -75,6 +75,8 @@ class CustomAuthenticationFilter(
         var member = memberService.getMemberFromAccessToken(accessToken)
 
         if (member == null) {
+            println("accessToken=$accessToken / apiKey=$apiKey")
+
             member = refreshAccessTokenByApiKey(apiKey)
         }
 
