@@ -127,6 +127,7 @@ jobs:
             docker stop "$NEXT" 2>/dev/null
             docker rm "$NEXT" 2>/dev/null
             docker run -d \
+              --pull=always \
               -v $VOLUME \
               --network $NETWORK \
               --name "$NEXT" \
