@@ -101,6 +101,6 @@ custom:
   jwt:
     secretKey: ON_SECRET
   accessToken:
-    expirationSeconds: "#{60 * 1}"
+    expirationSeconds: 60
   genFile:
     dirPath: c:/temp/slog_dev
