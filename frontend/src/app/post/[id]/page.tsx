@@ -66,6 +66,21 @@ export default async function Page({
 
   const post = postResponse.data;
 
+  // PPT Details 내용을 링크로 변환
+  // 패턴: <details id="ID"><summary>PPT</summary>... </details>
+  // 변환: [ID](/p/{postId}/ppt?id={ID-hyphenated})
+
+  // PPT Details 내용을 링크로 변환
+  // 패턴: <details id="ID"><summary>PPT</summary>... </details>
+  // 변환: [ID](/p/{postId}/ppt?id={ID-hyphenated})
+  post.content = post.content.replace(
+    /<details[^>]*id="([^"]+)"[^>]*>[\s\S]*?<summary>\s*PPT\s*<\/summary>[\s\S]*?<\/details>/gi,
+    (match, id) => {
+      const href = `/p/${post.id}/ppt?id=${id.replace(/ /g, "-")}`;
+      return `[${id}](${href})`;
+    }
+  );
+
   const genFilesResponse = await client.GET("/api/v1/posts/{postId}/genFiles", {
     params: { path: { postId: post.id } },
     headers: {
