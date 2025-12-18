@@ -213,7 +213,69 @@ class NotProdInitData(
         val genFile10FilePath = SampleResource.VIDEO_MP4_SAMPLE2.makeCopy()
         post10.addGenFile(PostGenFile.TypeCode.attachment, genFile10FilePath)
 
-        IntStream.rangeClosed(11, 100).forEach { i: Int ->
+        val post11 = postService.write(
+            memberUser4,
+            "테이블테니스를 하실 분있나요?",
+            """
+                <details id="사람의 인생">
+                <summary>PPT</summary>
+                <div markdown="1">
+                ---
+                marp: true
+                ---
+                
+                # 첫 번째 슬라이드
+                
+                내용
+                
+                ---
+                
+                # 두 번째 슬라이드
+                
+                - 항목 1
+                - 항목 2
+                
+                ---
+                
+                # 세 번째 슬라이드
+                
+                마지막
+
+                </div>
+                </details>
+
+                <details id="토끼의 인생">
+                <summary>PPT</summary>
+                <div markdown="1">
+                ---
+                marp: true
+                ---
+                
+                # 첫 번째 슬라이드!!
+                
+                내용
+                
+                ---
+                
+                # 두 번째 슬라이드
+                
+                - 항목 1
+                - 항목 2
+                
+                ---
+                
+                # 세 번째 슬라이드
+                
+                마지막
+
+                </div>
+                </details>
+            """.trimIndent(),
+            true,
+            true
+        )
+
+        IntStream.rangeClosed(12, 100).forEach { i: Int ->
             postService.write(
                 memberUser5,
                 "테스트 게시물 $i",

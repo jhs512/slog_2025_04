@@ -68,6 +68,9 @@ export default async function Page({
 
   const genFilesResponse = await client.GET("/api/v1/posts/{postId}/genFiles", {
     params: { path: { postId: post.id } },
+    headers: {
+      cookie: (await cookies()).toString(),
+    },
   });
 
   if (genFilesResponse.error) {
