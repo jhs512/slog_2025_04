@@ -29,7 +29,11 @@ export default async function Page({
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const { id } = await params;
-  const { id: pptId } = await searchParams; // Query param id
+  const searchParamsValue = await searchParams;
+  const pptId = (searchParamsValue.ppt_id || searchParamsValue.id) as
+    | string
+    | undefined;
+
   const postResponse = await getPost(id);
 
   if (postResponse.error) {
@@ -46,28 +50,47 @@ export default async function Page({
     // Helper to extract content by ID
     const extractContent = (targetId: string) => {
       // Regex explanation:
-      // 1. <details[^>]*id="${targetId}"[^>]*>: Finds <details> tag with specific id attribute.
-      // 2. [\s\S]*?: Non-greedy match for any content until the inner div.
-      // 3. <div[^>]*markdown="1"[^>]*>: Finds the specific div with markdown="1".
-      // 4. ([\s\S]*?): Capturing group for the content inside the div.
-      // 5. <\/div>: Closing div tag.
+      // 1. <details[^>]*ppt-id=["']${targetId}["'][^>]*>: Finds <details> tag with specific ppt-id attribute.
+      // 2. <summary>\s*(.*?)\s*<\/summary>: Captures the summary content as Group 1 (Title).
+      // 3. [\s\S]*?: Non-greedy match.
+      // 4. <div[^>]*markdown=["']1["'][^>]*>: Finds the specific div with markdown="1".
+      // 5. ([\s\S]*?): Capturing group for the content inside the div (Group 2).
+      // 6. <\/div>: Closing div tag.
       const regex = new RegExp(
-        `<details[^>]*id="${targetId}"[^>]*>[\\s\\S]*?<div[^>]*markdown="1"[^>]*>([\\s\\S]*?)<\\/div>`,
-        "i"
+        `<details[^>]*ppt-id=["']${targetId}["'][^>]*>[\\s\\S]*?<summary>\\s*(.*?)\\s*<\\/summary>[\\s\\S]*?<div[^>]*markdown=["']1["'][^>]*>([\\s\\S]*?)<\\/div>`,
+        "i",
       );
       return content.match(regex);
     };
 
     let match = extractContent(pptId);
 
-    // If no match, try replacing hyphens with spaces (common URL slug pattern)
+    // If no match, try replacing hyphens with spaces
     if (!match) {
       match = extractContent(pptId.replace(/-/g, " "));
     }
 
-    if (match && match[1]) {
-      content = match[1].trim();
+    if (match && match[2]) {
+      // Group 1 is title, Group 2 is content
+      if (match[1]) {
+        postResponse.data.title = match[1].trim();
+      }
+      content = match[2].trim();
+    } else {
+      // If valid ID provided but no content found, show error instead of full post
+      return (
+        <div className="flex-1 flex items-center justify-center text-red-500">
+          PPT Content not found for ID: {pptId}
+        </div>
+      );
     }
+  } else {
+    // If no PPT ID provided, show instruction or error
+    return (
+      <div className="flex-1 flex items-center justify-center text-muted-foreground">
+        PPT ID is required. (e.g. ?ppt_id=1)
+      </div>
+    );
   }
 
   // Marp로 HTML 변환

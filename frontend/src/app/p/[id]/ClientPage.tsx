@@ -13,7 +13,11 @@ import client from "@/lib/backend/client";
 
 import { components } from "@/lib/backend/apiV1/schema";
 import ToastUIEditorViewer from "@/lib/business/components/ToastUIEditorViewer";
-import { getDateHr, getFileSizeHr } from "@/lib/business/utils";
+import {
+  getDateHr,
+  getFileSizeHr,
+  processMarkdownContent,
+} from "@/lib/business/utils";
 
 import { LoginMemberContext } from "@/stores/auth/loginMember";
 
@@ -43,7 +47,10 @@ export default function ClientPage({
   const { resolvedTheme } = useTheme();
   const { loginMember, isAdmin } = use(LoginMemberContext);
 
-  const [post, setPost] = useState(initialPost);
+  const [post, setPost] = useState({
+    ...initialPost,
+    content: processMarkdownContent(initialPost.content, initialPost.id),
+  });
 
   const toastUiEditorViewerRef = useRef<Editor>(null);
   const contentRef = useRef<HTMLDivElement>(null);
@@ -249,14 +256,16 @@ export default function ClientPage({
           if (toastUiEditorViewerRef.current?.getInstance) {
             toastUiEditorViewerRef.current
               .getInstance()
-              .setMarkdown(res.data.content);
+              .setMarkdown(
+                processMarkdownContent(res.data.content, res.data.id),
+              );
           }
 
           setPost((prev) => ({
             ...prev,
             title: res.data.title,
             modifyDate: res.data.modifyDate,
-            content: res.data.content,
+            content: processMarkdownContent(res.data.content, res.data.id),
           }));
 
           toast("문서 업데이트", {

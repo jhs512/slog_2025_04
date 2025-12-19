@@ -301,7 +301,7 @@ export default function ClientPage({
       </div>
 
       {/* 진행률 바 */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800">
+      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gray-800 z-50">
         <div
           className="h-full bg-primary transition-all duration-300 ease-out"
           style={{ width: `${((currentSlide + 1) / slideCount) * 100}%` }}

@@ -6,7 +6,11 @@ import { cookies } from "next/headers";
 
 import client from "@/lib/backend/client";
 
-import { getSummaryFromContent, stripMarkdown } from "@/lib/business/utils";
+import {
+  getSummaryFromContent,
+  processMarkdownContent,
+  stripMarkdown,
+} from "@/lib/business/utils";
 
 import {
   Card,
@@ -111,13 +115,7 @@ async function PostContent({ id }: { id: string }) {
   const post = postResponse.data;
 
   // PPT Details 내용을 링크로 변환
-  post.content = post.content.replace(
-    /<details[^>]*id="([^"]+)"[^>]*>[\s\S]*?<summary>\s*PPT\s*<\/summary>[\s\S]*?<\/details>/gi,
-    (_match, id) => {
-      const href = `/p/${post.id}/ppt?id=${id.replace(/ /g, "-")}`;
-      return `[${id}](${href})`;
-    }
-  );
+  post.content = processMarkdownContent(post.content, post.id);
 
   const genFilesResponse = await client.GET("/api/v1/posts/{postId}/genFiles", {
     params: { path: { postId: post.id } },
