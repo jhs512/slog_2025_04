@@ -103,4 +103,4 @@ custom:
   accessToken:
     expirationSeconds: "#{60 * 20}"
   genFile:
-    dirPath: gen_files
+    dirPath: ./gen_files
