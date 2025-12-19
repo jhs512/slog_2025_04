@@ -458,7 +458,23 @@ class NotProdInitData(
             true
         )
 
-        IntStream.rangeClosed(12, 100).forEach { i: Int ->
+        val post12 = postService.write(
+            memberUser5,
+            "머메이드",
+            """
+                    ```mermaid
+                    graph TD;
+                        A-->B;
+                        A-->C;
+                        B-->D;
+                        C-->D;
+                    ```
+            """.trimIndent(),
+            true,
+            true
+        )
+
+        IntStream.rangeClosed(13, 100).forEach { i: Int ->
             postService.write(
                 memberUser5,
                 "테스트 게시물 $i",
