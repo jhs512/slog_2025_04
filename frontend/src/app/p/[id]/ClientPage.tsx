@@ -1,12 +1,15 @@
 "use client";
 
 import { Editor } from "@toast-ui/react-editor";
-import { use, useEffect, useRef } from "react";
+import { use, useEffect, useRef, useState } from "react";
+import { toast } from "sonner";
 
 import { useTheme } from "next-themes";
 
 import Image from "next/image";
 import Link from "next/link";
+
+import client from "@/lib/backend/client";
 
 import { components } from "@/lib/backend/apiV1/schema";
 import ToastUIEditorViewer from "@/lib/business/components/ToastUIEditorViewer";
@@ -28,7 +31,7 @@ import {
 import { Download, Eye, ListX, Lock } from "lucide-react";
 
 export default function ClientPage({
-  post,
+  post: initialPost,
   genFiles,
 }: {
   post: components["schemas"]["PostWithContentDto"];
@@ -37,8 +40,12 @@ export default function ClientPage({
   const { resolvedTheme } = useTheme();
   const { loginMember, isAdmin } = use(LoginMemberContext);
 
-  // any 타입을 Editor로 변경
+  const [post, setPost] = useState(initialPost);
+
   const toastUiEditorViewerRef = useRef<Editor>(null);
+  const lastModifyDateAfterRef = useRef(post.modifyDate);
+
+  const POLLING_INTERVAL = 10000;
 
   useEffect(() => {
     const checkAndScrollToElement = () => {
@@ -63,6 +70,117 @@ export default function ClientPage({
     }, 500);
 
     return () => clearInterval(interval);
+  }, [post.id]);
+
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    let isComponentMounted = true;
+    let isPollingInProgress = false;
+
+    const checkForUpdates = async () => {
+      // 컴포넌트가 언마운트되었거나 문서가 숨겨져 있거나 오프라인이면 폴링 중지
+      if (!isComponentMounted || document.hidden || !navigator.onLine) {
+        return;
+      }
+
+      // 이미 폴링 중이면 중복 실행 방지
+      if (isPollingInProgress) {
+        return;
+      }
+
+      isPollingInProgress = true;
+
+      try {
+        const res = await client.GET("/api/v1/posts/{id}", {
+          params: {
+            path: {
+              id: post.id,
+            },
+            query: {
+              lastModifyDateAfter: lastModifyDateAfterRef.current,
+            },
+          },
+        });
+
+        // 컴포넌트가 여전히 마운트된 상태인지 확인
+        if (!isComponentMounted) return;
+
+        if (res.response.status === 200 && res.data) {
+          lastModifyDateAfterRef.current = res.data.modifyDate;
+
+          if (toastUiEditorViewerRef.current?.getInstance) {
+            toastUiEditorViewerRef.current
+              .getInstance()
+              .setMarkdown(res.data.content);
+          }
+
+          setPost((prev) => ({
+            ...prev,
+            title: res.data.title,
+            modifyDate: res.data.modifyDate,
+            content: res.data.content,
+          }));
+
+          toast("문서 업데이트", {
+            description: "새로운 내용으로 업데이트되었습니다.",
+          });
+        }
+      } catch (error) {
+        console.error("문서 업데이트 중 오류 발생:", error);
+      } finally {
+        isPollingInProgress = false;
+      }
+
+      // 컴포넌트가 마운트된 상태일 때만 다음 폴링 예약
+      if (isComponentMounted) {
+        scheduleNextPoll();
+      }
+    };
+
+    const scheduleNextPoll = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(checkForUpdates, POLLING_INTERVAL);
+    };
+
+    const handleVisibilityChange = () => {
+      if (!document.hidden && isComponentMounted) {
+        // 탭이 다시 보일 때 즉시 업데이트 확인
+        clearTimeout(timeoutId);
+        checkForUpdates();
+      }
+    };
+
+    const handleFocus = () => {
+      // 다른 앱에서 브라우저로 돌아왔을 때
+      if (isComponentMounted && !document.hidden) {
+        clearTimeout(timeoutId);
+        checkForUpdates();
+      }
+    };
+
+    const handleOnline = () => {
+      // 네트워크가 다시 연결되면 즉시 업데이트 확인
+      if (isComponentMounted && !document.hidden) {
+        clearTimeout(timeoutId);
+        checkForUpdates();
+      }
+    };
+
+    // 초기 폴링 시작
+    scheduleNextPoll();
+
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    window.addEventListener("focus", handleFocus);
+    window.addEventListener("online", handleOnline);
+
+    // 클린업 함수
+    return () => {
+      isComponentMounted = false;
+      clearTimeout(timeoutId);
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+      window.removeEventListener("focus", handleFocus);
+      window.removeEventListener("online", handleOnline);
+    };
   }, [post.id]);
 
   return (
