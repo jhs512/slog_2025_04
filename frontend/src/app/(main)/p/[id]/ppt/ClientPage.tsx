@@ -35,7 +35,7 @@ export default function ClientPage({
     return 0;
   };
 
-  const [currentSlide, setCurrentSlide] = useState(0);
+  const [currentSlide, setCurrentSlide] = useState(getInitialSlide);
   const [isInitialized, setIsInitialized] = useState(false);
 
   // HTML에서 슬라이드 개수 추출

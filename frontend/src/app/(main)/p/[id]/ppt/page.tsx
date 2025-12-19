@@ -7,6 +7,31 @@ import client from "@/lib/backend/client";
 import ClientPage from "./ClientPage";
 
 async function getPost(id: string) {
+  // Walkthrough - UI Isolation and PPT Link Improvements
+  //
+  // This walkthrough covers the refactoring for the raw content view and the improvements made to PPT navigation.
+  //
+  // #### 3. Raw Route Group `(raw)`
+  // - Created `src/app/(raw)/p/[id]/raw/page.tsx`.
+  // - This page inherits only the minimal root layout, resulting in a pure "source code" view.
+  //
+  // ---
+  //
+  // ### PPT URL and Hash Improvements
+  //
+  // I updated the PPT viewing logic to provide a cleaner URL and more reliable navigation.
+  //
+  // #### 1. Query Parameter Rename (`ppt_id` → `id`)
+  // Updated `src/app/(main)/p/[id]/ppt/page.tsx` to prioritize the `id` query parameter for selecting specific PPT content. Error messages now properly suggest `?id=1`.
+  //
+  // #### 2. Enhanced Markdown Link Transformation
+  // Improved the `slog-link-to` regex in `src/lib/business/markdownUtils.ts`:
+  // - Supports both numeric IDs and slugs (e.g., `ppt-my-slide-id`).
+  // - Automatically transforms links to use the cleaner `?id=` parameter.
+  // - **Strict Hash Preservation**: Ensures that hashes like `#3` are correctly passed through to the final URL.
+  //
+  // #### 3. Reliable Slide Initialization
+  // Refined `src/app/(main)/p/[id]/ppt/ClientPage.tsx` to initialize the slide state directly from the URL hash on mounting. This ensures the correct slide is displayed immediately without flickering or jumping.
   const res = await client.GET("/api/v1/posts/{id}", {
     params: {
       path: {
@@ -30,7 +55,7 @@ export default async function Page({
 }) {
   const { id } = await params;
   const searchParamsValue = await searchParams;
-  const pptId = (searchParamsValue.ppt_id || searchParamsValue.id) as
+  const pptId = (searchParamsValue.id || searchParamsValue.ppt_id) as
     | string
     | undefined;
 
@@ -86,11 +111,9 @@ export default async function Page({
     }
   } else {
     // If no PPT ID provided, show instruction or error
-    return (
-      <div className="flex-1 flex items-center justify-center text-muted-foreground">
-        PPT ID is required. (e.g. ?ppt_id=1)
-      </div>
-    );
+    <div className="flex-1 flex items-center justify-center text-muted-foreground">
+      PPT ID가 필요합니다. (예: ?id=1)
+    </div>
   }
 
   // Marp로 HTML 변환
