@@ -30,6 +30,9 @@ import {
 
 import { Download, Eye, ListX, Lock } from "lucide-react";
 
+const HASH_SCROLL_DURATION = 15000; // 해시 스크롤 추적 지속 시간 (15초)
+const HASH_SCROLL_DEBOUNCE = 100; // 레이아웃 변화 후 스크롤까지 대기 시간
+
 export default function ClientPage({
   post: initialPost,
   genFiles,
@@ -43,33 +46,168 @@ export default function ClientPage({
   const [post, setPost] = useState(initialPost);
 
   const toastUiEditorViewerRef = useRef<Editor>(null);
+  const contentRef = useRef<HTMLDivElement>(null);
   const lastModifyDateAfterRef = useRef(post.modifyDate);
 
   const POLLING_INTERVAL = 10000;
 
+  // 해시 스크롤 - 레이아웃 변화 추적
   useEffect(() => {
-    const checkAndScrollToElement = () => {
-      const hash = decodeURIComponent(window.location.hash.substring(1));
-      const element = document.getElementById(hash);
-      if (element) {
-        element.scrollIntoView({ behavior: "smooth" });
-        return true; // 엘리먼트를 찾았음
+    const hash = decodeURIComponent(window.location.hash.substring(1));
+    if (!hash) return;
+
+    let debounceTimer: NodeJS.Timeout;
+    let isActive = true;
+    let lastScrollY = 0;
+    let targetElement: HTMLElement | null = null;
+
+    const scrollToTarget = () => {
+      if (!isActive || !targetElement) return;
+
+      const currentY = targetElement.getBoundingClientRect().top + window.scrollY;
+
+      // 위치가 변했을 때만 스크롤 (불필요한 스크롤 방지)
+      if (Math.abs(currentY - lastScrollY) > 10) {
+        lastScrollY = currentY;
+        targetElement.scrollIntoView({ behavior: "smooth" });
       }
-      return false; // 엘리먼트를 찾지 못함
     };
 
-    let attempts = 0;
+    const debouncedScroll = () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(scrollToTarget, HASH_SCROLL_DEBOUNCE);
+    };
 
-    const maxAttempts = 20; // 10초 / 0.5초 = 20회
+    // 타겟 엘리먼트 찾기 (최대 5초간 시도)
+    const findTargetElement = () => {
+      return new Promise<HTMLElement | null>((resolve) => {
+        const element = document.getElementById(hash);
+        if (element) {
+          resolve(element);
+          return;
+        }
 
-    const interval = setInterval(() => {
-      if (checkAndScrollToElement() || attempts >= maxAttempts) {
-        clearInterval(interval); // 엘리먼트를 찾았거나 최대 시도 횟수에 도달하면 중단
+        let attempts = 0;
+        const maxAttempts = 10;
+        const interval = setInterval(() => {
+          const el = document.getElementById(hash);
+          if (el || attempts >= maxAttempts) {
+            clearInterval(interval);
+            resolve(el);
+          }
+          attempts++;
+        }, 500);
+      });
+    };
+
+    // ResizeObserver - 콘텐츠 영역 크기 변화 감지
+    const resizeObserver = new ResizeObserver(() => {
+      if (isActive && targetElement) {
+        debouncedScroll();
       }
-      attempts++;
-    }, 500);
+    });
 
-    return () => clearInterval(interval);
+    // MutationObserver - DOM 변화 감지 (이미지, iframe 추가 등)
+    const mutationObserver = new MutationObserver((mutations) => {
+      if (!isActive || !targetElement) return;
+
+      const hasLayoutChange = mutations.some((mutation) => {
+        // 노드 추가/삭제
+        if (mutation.addedNodes.length > 0 || mutation.removedNodes.length > 0) {
+          return true;
+        }
+        // 속성 변화 (이미지 src, width, height 등)
+        if (mutation.type === "attributes") {
+          const attr = mutation.attributeName;
+          return ["src", "width", "height", "style"].includes(attr || "");
+        }
+        return false;
+      });
+
+      if (hasLayoutChange) {
+        debouncedScroll();
+      }
+    });
+
+    // 이미지 로드 완료 감지
+    const handleImageLoad = () => {
+      if (isActive && targetElement) {
+        debouncedScroll();
+      }
+    };
+
+    const setupObservers = async () => {
+      targetElement = await findTargetElement();
+      if (!targetElement || !isActive) return;
+
+      // 초기 스크롤
+      scrollToTarget();
+
+      const contentEl = contentRef.current;
+      if (contentEl) {
+        // ResizeObserver로 콘텐츠 영역 감시
+        resizeObserver.observe(contentEl);
+
+        // MutationObserver로 DOM 변화 감시
+        mutationObserver.observe(contentEl, {
+          childList: true,
+          subtree: true,
+          attributes: true,
+          attributeFilter: ["src", "width", "height", "style"],
+        });
+
+        // 모든 이미지에 load 이벤트 리스너 추가
+        const images = contentEl.querySelectorAll("img");
+        images.forEach((img) => {
+          if (!img.complete) {
+            img.addEventListener("load", handleImageLoad);
+          }
+        });
+
+        // 동적으로 추가되는 이미지 처리
+        const imageObserver = new MutationObserver((mutations) => {
+          mutations.forEach((mutation) => {
+            mutation.addedNodes.forEach((node) => {
+              if (node instanceof HTMLImageElement) {
+                if (!node.complete) {
+                  node.addEventListener("load", handleImageLoad);
+                }
+              } else if (node instanceof HTMLElement) {
+                const imgs = node.querySelectorAll?.("img");
+                imgs?.forEach((img) => {
+                  if (!img.complete) {
+                    img.addEventListener("load", handleImageLoad);
+                  }
+                });
+              }
+            });
+          });
+        });
+
+        imageObserver.observe(contentEl, {
+          childList: true,
+          subtree: true,
+        });
+
+        // 15초 후 모든 관찰자 해제
+        setTimeout(() => {
+          isActive = false;
+          resizeObserver.disconnect();
+          mutationObserver.disconnect();
+          imageObserver.disconnect();
+          clearTimeout(debounceTimer);
+        }, HASH_SCROLL_DURATION);
+      }
+    };
+
+    setupObservers();
+
+    return () => {
+      isActive = false;
+      clearTimeout(debounceTimer);
+      resizeObserver.disconnect();
+      mutationObserver.disconnect();
+    };
   }, [post.id]);
 
   useEffect(() => {
@@ -228,7 +366,7 @@ export default function ClientPage({
             </div>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent ref={contentRef}>
           <ToastUIEditorViewer
             key={resolvedTheme}
             initialValue={post.content}
