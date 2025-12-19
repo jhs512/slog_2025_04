@@ -183,7 +183,10 @@ export default function ClientPage({
             height: 100%;
             align-items: center;
             justify-content: center;
-            font-size: 0.9em; /* Reduce overall font size */
+            font-size: 0.8em; /* Global font size reduction */
+          }
+          .marpit section {
+            font-size: 14px !important;
           }
           .marpit > svg {
             width: 100%;
