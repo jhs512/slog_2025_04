@@ -44,3 +44,4 @@ apiV1
 src/main/generated
 src/main/resources/application-secret.yml
 *.tmp
+gen_files

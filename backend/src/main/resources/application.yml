@@ -103,4 +103,4 @@ custom:
   accessToken:
     expirationSeconds: "#{60 * 20}"
   genFile:
-    dirPath: c:/temp/slog_dev
+    dirPath: gen_files
