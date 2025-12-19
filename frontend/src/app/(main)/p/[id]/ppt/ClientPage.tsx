@@ -10,6 +10,8 @@ import {
   ChevronLeft,
   ChevronRight,
   Home,
+  ZoomIn,
+  ZoomOut,
 } from "lucide-react";
 
 export default function ClientPage({
@@ -36,7 +38,12 @@ export default function ClientPage({
   };
 
   const [currentSlide, setCurrentSlide] = useState(getInitialSlide);
+  const [zoomLevel, setZoomLevel] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
+
+  const zoomIn = useCallback(() => setZoomLevel((prev) => Math.min(prev + 0.1, 2)), []);
+  const zoomOut = useCallback(() => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5)), []);
+  const resetZoom = useCallback(() => setZoomLevel(1), []);
 
   // HTML에서 슬라이드 개수 추출
   const slideCount = (html.match(/<section/g) || []).length;
@@ -63,6 +70,25 @@ export default function ClientPage({
   // 키보드 네비게이션
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Zoom Shortcuts: Cmd/Ctrl + (+/- / 0)
+      if (e.metaKey || e.ctrlKey) {
+        if (e.key === "=" || e.key === "+") {
+          e.preventDefault();
+          zoomIn();
+          return;
+        }
+        if (e.key === "-") {
+          e.preventDefault();
+          zoomOut();
+          return;
+        }
+        if (e.key === "0") {
+          e.preventDefault();
+          resetZoom();
+          return;
+        }
+      }
+
       switch (e.key) {
         case "ArrowRight":
         case " ":
@@ -166,7 +192,30 @@ export default function ClientPage({
           <span className="text-sm">{post.title}</span>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-sm">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              zoomOut();
+            }}
+          >
+            <ZoomOut className="w-5 h-5" />
+          </Button>
+          <span className="text-sm w-12 text-center">
+            {Math.round(zoomLevel * 100)}%
+          </span>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={(e) => {
+              e.stopPropagation();
+              zoomIn();
+            }}
+          >
+            <ZoomIn className="w-5 h-5" />
+          </Button>
+          <span className="text-sm ml-4">
             {currentSlide + 1} / {slideCount}
           </span>
         </div>
@@ -178,15 +227,15 @@ export default function ClientPage({
         <style dangerouslySetInnerHTML={{
           __html: `
           .marpit {
+            --ppt-font-size: ${14 * zoomLevel}px;
             display: flex;
             width: 100%;
             height: 100%;
             align-items: center;
             justify-content: center;
-            font-size: 0.8em; /* Global font size reduction */
           }
           .marpit section {
-            font-size: 14px !important;
+            font-size: var(--ppt-font-size) !important;
           }
           .marpit > svg {
             width: 100%;
