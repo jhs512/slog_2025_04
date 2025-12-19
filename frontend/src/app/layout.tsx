@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 
 import localFont from "next/font/local";
 
-import { Toaster } from "@/components/ui/sonner";
 
-import { ClientLayout } from "./ClientLayout";
 import "./globals.css";
 
 const pretendard = localFont({
@@ -29,15 +27,7 @@ export default function RootLayout({
       <body
         className={`${pretendard.variable} ${pretendard.className} antialiased`}
       >
-        <div
-          className="flex flex-col min-h-[100dvh] bg-background"
-          vaul-drawer-wrapper="true"
-        >
-          <ClientLayout>
-            {children}
-            <Toaster />
-          </ClientLayout>
-        </div>
+        {children}
       </body>
     </html>
   );
