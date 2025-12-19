@@ -4,29 +4,29 @@ export function processMarkdownContent(
 ): string {
   let processedContent = content;
 
-  // 1. [text](slog-link-to=ppt-ID) -> [text](/p/{currentPostId}/ppt?id=ID)
-  // Support optional hash: slog-link-to=ppt-ID#HASH
+  // 1. [text](surl:ppt/ID) -> [text](/p/{currentPostId}/ppt/ID)
+  // Support optional hash: surl:ppt/ID#HASH
   processedContent = processedContent.replace(
-    /\[([^\]]+)\]\(slog-link-to=ppt-([^)#\s]+)(?:#([^)]+))?\)/g,
+    /\[([^\]]+)\]\(surl:ppt\/([^)#\s]+)(?:#([^)]+))?\)/g,
     (_, text, id, hash) => {
       const hashPart = hash ? `#${hash}` : "";
-      return `[${text}](/p/${currentPostId}/ppt?id=${id}${hashPart})`;
+      return `[${text}](/p/${currentPostId}/ppt/${id}${hashPart})`;
     }
   );
 
-  // 2. [text](slog-link-to=POSTID-ppt-ID) -> [text](/p/{POSTID}/ppt?id=ID)
-  // Support optional hash: slog-link-to=POSTID-ppt-ID#HASH
+  // 2. [text](surl:POSTID/ppt/ID) -> [text](/p/{POSTID}/ppt/ID)
+  // Support optional hash: surl:POSTID/ppt/ID#HASH
   processedContent = processedContent.replace(
-    /\[([^\]]+)\]\(slog-link-to=(\d+)-ppt-([^)#\s]+)(?:#([^)]+))?\)/g,
+    /\[([^\]]+)\]\(surl:(\d+)\/ppt\/([^)#\s]+)(?:#([^)]+))?\)/g,
     (_, text, postId, id, hash) => {
       const hashPart = hash ? `#${hash}` : "";
-      return `[${text}](/p/${postId}/ppt?id=${id}${hashPart})`;
+      return `[${text}](/p/${postId}/ppt/${id}${hashPart})`;
     }
   );
 
-  // 3. [text](slog-link-to=POSTID#HASH) or [text](slog-link-to=POSTID) -> [text](/p/{POSTID}#HASH)
+  // 3. [text](surl:POSTID) or [text](surl:POSTID#HASH) -> [text](/p/{POSTID}#HASH)
   processedContent = processedContent.replace(
-    /\[([^\]]+)\]\(slog-link-to=(\d+)(?:#([^)]+))?\)/g,
+    /\[([^\]]+)\]\(surl:(\d+)(?:#([^)]+))?\)/g,
     (_, text, postId, hash) => {
       const hashPart = hash ? `#${hash}` : "";
       return `[${text}](/p/${postId}${hashPart})`;
