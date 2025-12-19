@@ -57,7 +57,7 @@ export async function generateMetadata({
   const summary = getSummaryFromContent(post.content);
 
   return {
-    title: post.title,
+    title: `Doc ${id} - ${post.title}`,
     description: summary || stripMarkdown(post.content),
   };
 }

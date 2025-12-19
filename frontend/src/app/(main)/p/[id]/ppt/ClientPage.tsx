@@ -91,9 +91,6 @@ export default function ClientPage({
     return () => {
       window.removeEventListener("keydown", handleKeyDown);
     };
-    return () => {
-      window.removeEventListener("keydown", handleKeyDown);
-    };
   }, [nextSlide, prevSlide, goToSlide, slideCount]);
 
   // 초기 로드 시 해시 확인
@@ -186,6 +183,7 @@ export default function ClientPage({
             height: 100%;
             align-items: center;
             justify-content: center;
+            font-size: 0.9em; /* Reduce overall font size */
           }
           .marpit > svg {
             width: 100%;
@@ -197,6 +195,12 @@ export default function ClientPage({
             display: block;
           }
           
+          /* Fix Code Wrapping */
+          .marpit pre, .marpit code {
+            white-space: pre-wrap !important;
+            word-break: break-all !important;
+          }
+
           /* Force Light Theme for Code Blocks in Marp */
           .marpit code[class*="language-"],
           .marpit pre[class*="language-"] {

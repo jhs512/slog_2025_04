@@ -46,6 +46,45 @@ async function getPost(id: string) {
   return res;
 }
 
+export async function generateMetadata({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}) {
+  const { id } = await params;
+  const searchParamsValue = await searchParams;
+  const pptId = (searchParamsValue.id || searchParamsValue.ppt_id) as
+    | string
+    | undefined;
+
+  const postResponse = await getPost(id);
+
+  if (postResponse.error) {
+    return {
+      title: "Error - PPT",
+    };
+  }
+
+  let title = postResponse.data.title;
+
+  if (typeof pptId === "string" && pptId) {
+    const regex = new RegExp(
+      `<details[^>]*ppt-id=["']${pptId}["'][^>]*>[\\s\\S]*?<summary>\\s*(.*?)\\s*<\\/summary>`,
+      "i"
+    );
+    const match = postResponse.data.content.match(regex);
+    if (match && match[1]) {
+      title = match[1].trim();
+    }
+  }
+
+  return {
+    title: `Doc ${id} - ${title}`,
+  };
+}
+
 export default async function Page({
   params,
   searchParams,
