@@ -40,6 +40,8 @@ export default function ClientPage({
   const [currentSlide, setCurrentSlide] = useState(getInitialSlide);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [showControls, setShowControls] = useState(true);
+
 
   const zoomIn = useCallback(() => setZoomLevel((prev) => Math.min(prev + 0.1, 2)), []);
   const zoomOut = useCallback(() => setZoomLevel((prev) => Math.max(prev - 0.1, 0.5)), []);
@@ -166,11 +168,14 @@ export default function ClientPage({
 
       const { clientX } = e;
       const { innerWidth } = window;
+      const xPercentage = (clientX / innerWidth) * 100;
 
-      if (clientX < innerWidth / 2) {
+      if (xPercentage < 20) {
         prevSlide();
-      } else {
+      } else if (xPercentage > 80) {
         nextSlide();
+      } else {
+        setShowControls((prev) => !prev);
       }
     },
     [nextSlide, prevSlide]
@@ -181,8 +186,8 @@ export default function ClientPage({
       className="fixed inset-0 bg-black flex flex-col"
       onClick={handleContainerClick}
     >
-      {/* 컨트롤 바 */}
-      <div className="absolute top-0 left-0 right-0 z-10 bg-black/50 text-white p-2 flex items-center justify-between opacity-0 hover:opacity-100 transition-opacity">
+      {/* 상단 컨트롤 바 (세로 모드/데스크톱용) */}
+      <div className={`absolute top-0 left-0 right-0 z-10 bg-black/50 text-white p-2 landscape:hidden flex items-center justify-between transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 hover:opacity-100"}`}>
         <div className="flex items-center gap-2">
           <Button variant="ghost" size="icon" asChild>
             <a href={`/p/${post.id}`}>
@@ -221,13 +226,54 @@ export default function ClientPage({
         </div>
       </div>
 
+      {/* 우측 사이드바 (가로 모드 전용) */}
+      <div className={`hidden landscape:flex fixed right-0 top-0 bottom-0 w-12 z-20 bg-black/80 text-white flex-col items-center justify-between py-4 border-l border-white/10 transition-transform duration-300 ${showControls ? "translate-x-0" : "translate-x-full"}`}
+        onClick={(e) => e.stopPropagation()}
+      >
+        <div className="flex flex-col items-center gap-4">
+          <Button variant="ghost" size="icon" asChild className="w-10 h-10">
+            <a href={`/p/${post.id}`}>
+              <Home className="w-5 h-5" />
+            </a>
+          </Button>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={zoomIn} className="w-10 h-10">
+            <ZoomIn className="w-5 h-5" />
+          </Button>
+          <span className="text-[10px] font-medium rotate-90 my-2">
+            {Math.round(zoomLevel * 100)}%
+          </span>
+          <Button variant="ghost" size="icon" onClick={zoomOut} className="w-10 h-10">
+            <ZoomOut className="w-5 h-5" />
+          </Button>
+        </div>
+
+        <div className="flex flex-col items-center gap-2">
+          <Button variant="ghost" size="icon" onClick={nextSlide} disabled={currentSlide === slideCount - 1} className="w-10 h-10">
+            <ChevronRight className="w-5 h-5" />
+          </Button>
+          <span className="text-xs font-bold my-1">
+            {currentSlide + 1}
+          </span>
+          <div className="w-6 h-[1px] bg-white/20" />
+          <span className="text-[10px] opacity-60 my-1">
+            {slideCount}
+          </span>
+          <Button variant="ghost" size="icon" onClick={prevSlide} disabled={currentSlide === 0} className="w-10 h-10">
+            <ChevronLeft className="w-5 h-5" />
+          </Button>
+        </div>
+      </div>
+
       {/* 슬라이드 영역 */}
       <div className="flex-1 flex items-center justify-center overflow-hidden">
         <style dangerouslySetInnerHTML={{ __html: css }} />
         <style dangerouslySetInnerHTML={{
           __html: `
           .marpit {
-            --ppt-font-size: ${14 * zoomLevel}px;
+            --ppt-font-size: ${24 * zoomLevel}px;
             display: flex;
             width: 100%;
             height: 100%;
@@ -336,8 +382,8 @@ export default function ClientPage({
         />
       </div>
 
-      {/* 네비게이션 버튼 */}
-      <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-4 opacity-0 hover:opacity-100 transition-opacity">
+      {/* 네비게이션 버튼 (세로 모드용) */}
+      <div className={`absolute bottom-4 left-0 right-0 flex landscape:hidden justify-center gap-4 transition-opacity duration-300 ${showControls ? "opacity-100" : "opacity-0 hover:opacity-100"}`}>
         <Button
           variant="secondary"
           size="icon"
