@@ -24,7 +24,23 @@ export function processMarkdownContent(
     }
   );
 
-  // 3. [text](surl:POSTID) or [text](surl:POSTID#HASH) -> [text](/p/{POSTID}#HASH)
+  // 3. [text](surl:raw/ID) -> [text](/p/{currentPostId}/raw/ID)
+  processedContent = processedContent.replace(
+    /\[([^\]]+)\]\(surl:raw\/([^)\s]+)\)/g,
+    (_, text, id) => {
+      return `[${text}](/p/${currentPostId}/raw/${id})`;
+    }
+  );
+
+  // 4. [text](surl:POSTID/raw/ID) -> [text](/p/{POSTID}/raw/ID)
+  processedContent = processedContent.replace(
+    /\[([^\]]+)\]\(surl:(\d+)\/raw\/([^)\s]+)\)/g,
+    (_, text, postId, id) => {
+      return `[${text}](/p/${postId}/raw/${id})`;
+    }
+  );
+
+  // 5. [text](surl:POSTID) or [text](surl:POSTID#HASH) -> [text](/p/{POSTID}#HASH)
   processedContent = processedContent.replace(
     /\[([^\]]+)\]\(surl:(\d+)(?:#([^)]+))?\)/g,
     (_, text, postId, hash) => {
