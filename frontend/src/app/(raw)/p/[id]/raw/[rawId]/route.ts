@@ -34,9 +34,9 @@ export async function GET(
     let title = postResponse.data.title;
 
     const extractContent = (targetId: string) => {
-      // Matches both ppt-id or raw-id
+      // Matches only raw-id
       const regex = new RegExp(
-        `<details[^>]*(?:ppt-id|raw-id)=["']${targetId}["'][^>]*>[\\s\\S]*?<summary>\\s*(.*?)\\s*<\\/summary>[\\s\\S]*?<div[^>]*markdown=["']1["'][^>]*>([\\s\\S]*?)<\\/div>`,
+        `<details[^>]*raw-id=["']${targetId}["'][^>]*>[\\s\\S]*?<summary>\\s*(.*?)\\s*<\\/summary>[\\s\\S]*?<div[^>]*markdown=["']1["'][^>]*>([\\s\\S]*?)<\\/div>`,
         "i"
       );
       return content.match(regex);
