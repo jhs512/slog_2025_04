@@ -474,7 +474,33 @@ class NotProdInitData(
             true
         )
 
-        IntStream.rangeClosed(13, 100).forEach { i: Int ->
+        val post13 = postService.write(
+            memberUser5,
+            "raw 분할",
+            """
+                    # 링크
+                    [RAW 1 링크, `surl:raw/1` : `/p/13/raw/1` 주소로 변경됨](surl:raw/1)
+                    
+                    # RAW
+                    <details raw-id="1">
+                    <summary>인간의 인생</summary>
+                    <div markdown="1">
+                    
+                    ```json
+                    {
+                        "resultCode": "200-1",
+                        "msg": "성공"
+                    }
+                    ```
+                    
+                    </div>
+                    </details>
+            """.trimIndent(),
+            true,
+            true
+        )
+
+        IntStream.rangeClosed(14, 100).forEach { i: Int ->
             postService.write(
                 memberUser5,
                 "테스트 게시물 $i",
