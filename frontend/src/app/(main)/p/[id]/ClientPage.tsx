@@ -223,8 +223,8 @@ export default function ClientPage({
     let isPollingInProgress = false;
 
     const checkForUpdates = async () => {
-      // 컴포넌트가 언마운트되었거나 문서가 숨겨져 있거나 오프라인이면 폴링 중지
-      if (!isComponentMounted || document.hidden || !navigator.onLine) {
+      // 컴포넌트가 언마운트되었거나 문서가 숨겨져 있으면 폴링 중지
+      if (!isComponentMounted || document.hidden) {
         return;
       }
 
